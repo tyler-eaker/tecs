@@ -1,7 +1,13 @@
+#include "../Engine/include/Coordinator.h"
+#include "PhysicsSystem.h"
+#include "../Engine/include/Components.h"
 #include <raylib.h>
 #include <spdlog/spdlog.h>
 #include <imgui.h>
 #include <rlImGui.h>
+#include <memory>
+
+Coordinator coordinator;
 
 int main() {
 
@@ -16,11 +22,37 @@ int main() {
         spdlog::error("Window failed to initialize.");
     }
     spdlog::info("Window initialized.");
-    SetTargetFPS(9999);
+
+    SetTargetFPS(60);
 
     rlImGuiSetup(true);
 
+    coordinator.RegisterComponent<Position>();
+    coordinator.RegisterComponent<Velocity>();
+    auto physicsSystem = coordinator.RegisterSystem<PhysicsSystem>();
+
+
+    Signature physicsSignature;
+    physicsSignature.set(coordinator.GetComponentType<Position>());
+    physicsSignature.set(coordinator.GetComponentType<Velocity>());
+    coordinator.SetSystemSignature<PhysicsSystem>(physicsSignature);
+
+    Entity player = coordinator.CreateEntity();
+
+    coordinator.AddComponent<Position>(player, Position{ 0.0f, 0.0f });
+
+    coordinator.AddComponent<Velocity>(player, Velocity{ 10.0f, 15.0f });
+
+    int frameCount = 0;
+
     while (!WindowShouldClose()) {
+        float dt = GetFrameTime();
+
+        physicsSystem->Update(dt);
+
+        auto& playerPos = coordinator.GetComponent<Position>(player);
+        spdlog::info("Frame {}: Position X: {:.2f}, Y: {:.2f}", frameCount, playerPos.x, playerPos.y);
+
         BeginDrawing();
         ClearBackground(DARKGRAY);
 
@@ -32,6 +64,8 @@ int main() {
         rlImGuiEnd();
 
         EndDrawing();
+
+        frameCount++;
     }
 
     rlImGuiShutdown();
