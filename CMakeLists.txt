@@ -49,9 +49,11 @@ target_link_libraries(ImGui PUBLIC raylib)
 
 add_library(Engine STATIC 
     Engine/src/ECS.cpp
+    Engine/include/Coordinator.h
     Engine/include/ECS.h
     Engine/include/EntityManager.h
-    Engine/include/Coordinator.h
+    Engine/include/System.h
+    Engine/include/SystemManager.h
 )
 target_include_directories(Engine PUBLIC Engine/include)
 

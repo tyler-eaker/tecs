@@ -2,6 +2,7 @@
 
 #include "ECS.h"
 #include "EntityManager.h"
+#include "SystemManager.h"
 #include <unordered_map>
 #include <memory>
 #include <typeinfo>
@@ -9,6 +10,7 @@
 class Coordinator {
 private:
 	std::unique_ptr<EntityManager> entityManager;
+	std::unique_ptr<SystemManager> systemManager;
 
 	std::unordered_map<const char*, std::shared_ptr<IComponentArray>> componentArrays;
 
@@ -25,6 +27,7 @@ private:
 public:
 	Coordinator() {
 		entityManager = std::make_unique<EntityManager>();
+		systemManager = std::make_unique<SystemManager>();
 	}
 
 	template<typename T>
@@ -53,6 +56,7 @@ public:
 			auto const& componentArray = pair.second;
 			componentArray->EntityDestroyed(entity);
 		}
+		systemManager->EntityDestroyed(entity);
 	}
 
 	template<typename T>
@@ -61,6 +65,7 @@ public:
 		Signature signature = entityManager->GetSignature(entity);
 		signature.set(GetComponentType<T>(), true);
 		entityManager->SetSignature(entity, signature);
+		systemManager->EntitySignatureChanged(entity, signature);
 	}
 
 	template<typename T>
@@ -69,10 +74,21 @@ public:
 		Signature signature = entityManager->GetSignature(entity);
 		signature.set(GetComponentType<T>(), false);
 		entityManager->SetSignature(entity, signature);
+		systemManager->EntitySignatureChanged(entity, signature);
 	}
 
 	template<typename T>
 	T& GetComponent(Entity entity) {
 		return GetComponentArray<T>()->GetData(entity);
+	}
+
+	template<typename T>
+	std::shared_ptr<T> RegisterSystem() {
+		return systemManager->RegisterSystem<T>();
+	}
+
+	template<typename T>
+	void SetSystemSignature(Signature signature) {
+		systemManager->SetSignature<T>(signature);
 	}
 };
