@@ -14,7 +14,6 @@ public:
     std::shared_ptr<T> RegisterSystem() {
         const char* typeName = typeid(T).name();
         SPDLOG_ASSERT(systems.find(typeName) == systems.end(), "Registering system more than once.");
-
         auto system = std::make_shared<T>();
         systems[typeName] = system;
         return system;

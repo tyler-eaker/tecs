@@ -12,7 +12,6 @@ Coordinator coordinator;
 int main() {
 
     SetTraceLogLevel(LOG_WARNING); // Disables built in Raylib logs
-    spdlog::info("Starting tecs...");
 
     const int screenWidth = 1280;
     const int screenHeight = 720;
@@ -23,7 +22,7 @@ int main() {
     }
     spdlog::info("Window initialized.");
 
-    SetTargetFPS(60);
+    SetTargetFPS(120);
 
     rlImGuiSetup(true);
 
@@ -51,15 +50,17 @@ int main() {
         physicsSystem->Update(dt);
 
         auto& playerPos = coordinator.GetComponent<Position>(player);
-        spdlog::info("Frame {}: Position X: {:.2f}, Y: {:.2f}", frameCount, playerPos.x, playerPos.y);
 
         BeginDrawing();
         ClearBackground(DARKGRAY);
 
         rlImGuiBegin();
         ImGui::Begin("tecs");
-        ImGui::Text("Engine Core Systems Initialized.");
         ImGui::Text("Current FPS: %d", GetFPS());
+        ImGui::Text("Frame %d", frameCount);
+        ImGui::Text("Position X: %.2f", playerPos.x);
+        ImGui::SameLine();
+        ImGui::Text(" Y: %.2f", playerPos.y);
         ImGui::End();
         rlImGuiEnd();
 

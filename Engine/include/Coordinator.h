@@ -26,8 +26,12 @@ private:
 
 public:
 	Coordinator() {
+		spdlog::info("Initializing coordinator...");
 		entityManager = std::make_unique<EntityManager>();
 		systemManager = std::make_unique<SystemManager>();
+		if (entityManager && systemManager) {
+			spdlog::info("Coordinator initialized.");
+		}
 	}
 
 	template<typename T>
