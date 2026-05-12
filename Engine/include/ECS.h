@@ -1,0 +1,57 @@
+#pragma once
+
+#include <cstdint>
+#include <bitset>
+#include <cstdlib>
+#include <spdlog/spdlog.h>
+
+#define SPDLOG_ASSERT(condition, ...) \
+    if (!(condition)) { \
+        spdlog::critical("Assertion Failed: " __VA_ARGS__); \
+        std::abort(); \
+    }
+
+using Entity = std::uint32_t;
+const Entity MAX_ENTITIES = 5000;
+
+using ComponentType = std::uint8_t;
+const ComponentType MAX_COMPONENTS = 32;
+using Signature = std::bitset<MAX_COMPONENTS>;
+
+template<typename T>
+class ComponentArray {
+private:
+    T denseData[MAX_ENTITIES];           // The actual component payload
+    Entity denseEntities[MAX_ENTITIES];  // The Entity ID that owns the payload
+    size_t sparseIndices[MAX_ENTITIES];  // Points to the correct Dense Array index
+    size_t activeCount;                  // How many components are currently alive
+
+public:
+    ComponentArray() {
+        activeCount = 0;
+    }
+
+    void InsertData(Entity entity, T component) {
+        SPDLOG_ASSERT(activeCount < MAX_ENTITIES, "Too many entities in ComponentArray.");
+        denseData[activeCount] = component;
+        denseEntities[activeCount] = entity;
+        sparseIndices[entity] = activeCount;
+        ++activeCount;
+    }
+
+    void RemoveData(Entity entity) {
+        SPDLOG_ASSERT(activeCount > 0, "Cannot remove from an empty ComponentArray.");
+        size_t indexOfRemoved = sparseIndices[entity];
+        size_t indexOfLast = activeCount - 1;
+        denseData[indexOfRemoved] = denseData[indexOfLast];
+        Entity ownerOfLast = denseEntities[indexOfLast];
+        denseEntities[indexOfRemoved] = ownerOfLast;
+        sparseIndices[ownerOfLast] = indexOfRemoved;
+        --activeCount;
+    }
+
+    T& GetData(Entity entity) {
+        SPDLOG_ASSERT(sparseIndices[entity] < activeCount, "Retrieving non-existent component.");
+        return denseData[sparseIndices[entity]];
+    }
+};

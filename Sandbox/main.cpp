@@ -36,7 +36,7 @@ int main() {
 
     rlImGuiShutdown();
     CloseWindow();
-    spdlog::info("Engine shut down cleanly.");
+    spdlog::info("Engine shut down successfully.");
 
     return 0;
 }
