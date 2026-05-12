@@ -18,8 +18,14 @@ using ComponentType = std::uint8_t;
 const ComponentType MAX_COMPONENTS = 32;
 using Signature = std::bitset<MAX_COMPONENTS>;
 
+class IComponentArray {
+public:
+    virtual ~IComponentArray() = default;
+    virtual void EntityDestroyed(Entity entity) = 0;
+};
+
 template<typename T>
-class ComponentArray {
+class ComponentArray : public IComponentArray{
 private:
     T denseData[MAX_ENTITIES];           // The actual component payload
     Entity denseEntities[MAX_ENTITIES];  // The Entity ID that owns the payload
@@ -29,6 +35,12 @@ private:
 public:
     ComponentArray() {
         activeCount = 0;
+    }
+
+    void EntityDestroyed(Entity entity) override {
+        if (sparseIndices[entity] < activeCount && denseEntities[sparseIndices[entity]] == entity) {
+            RemoveData(entity);
+        }
     }
 
     void InsertData(Entity entity, T component) {

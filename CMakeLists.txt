@@ -51,6 +51,7 @@ add_library(Engine STATIC
     Engine/src/ECS.cpp
     Engine/include/ECS.h
     Engine/include/EntityManager.h
+    Engine/include/Coordinator.h
 )
 target_include_directories(Engine PUBLIC Engine/include)
 
