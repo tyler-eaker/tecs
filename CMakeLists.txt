@@ -57,6 +57,7 @@ add_library(Engine STATIC
     Engine/include/SystemManager.h
 
     Sandbox/PhysicsSystem.h
+    Sandbox/RenderSystem.h
 )
 target_include_directories(Engine PUBLIC Engine/include)
 
