@@ -2,42 +2,39 @@
 
 namespace Core {
 
-	Window::Window(const WindowSpecification& specification)
-		: m_Specification(specification) {
-	}
+    Window::Window(const WindowSpecification& specification)
+        : m_Specification(specification) {}
 
-	Window::~Window() {
-		Destroy();
-	}
+    Window::~Window() {
+        Destroy();
+    }
 
-	void Window::Create() {
-		spdlog::info("Initializing window...");
-		InitWindow(m_Specification.width, m_Specification.height, m_Specification.title);
-		if (WindowShouldClose()) {
-			spdlog::error("Window failed to initialize.");
-		}
-		spdlog::info("Window initialized.");
+    void Window::Create() {
+        spdlog::info("Initializing window...");
+        InitWindow(m_Specification.width, m_Specification.height, m_Specification.title);
+        if (WindowShouldClose()) {
+            spdlog::error("Window failed to initialize.");
+        }
+        spdlog::info("Window initialized.");
 
-		SetTargetFPS(m_Specification.fpsLimit);
-	}
+        SetTargetFPS(m_Specification.fpsLimit);
+    }
 
-	void Window::Destroy() {
-		if (IsWindowReady()) {
-			CloseWindow();
-			spdlog::info("Window closed safely.");
-		}
-	}
+    void Window::Destroy() {
+        if (IsWindowReady()) {
+            CloseWindow();
+        }
+    }
 
-	void Window::BeginFrame() {
-		BeginDrawing();
-	}
+    void Window::BeginFrame() {
+        BeginDrawing();
+    }
 
-	void Window::EndFrame() {
-		EndDrawing();
-	}
+    void Window::EndFrame() {
+        EndDrawing();
+    }
 
-	bool Window::ShouldClose() const
-	{
-		return WindowShouldClose();
-	}
+    bool Window::ShouldClose() const {
+        return WindowShouldClose();
+    }
 }

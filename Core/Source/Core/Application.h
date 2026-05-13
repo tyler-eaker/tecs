@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Window.h"
-#include "ECS/Coordinator.h"
-#include "Systems/PhysicsSystem.h"
-#include "Systems/RenderSystem.h"
+#include "Layer.h"
+#include "Events/Event.h"
+#include "Events/ApplicationEvent.h"
 
 #include <string>
 #include <memory>
@@ -11,35 +11,40 @@
 
 namespace Core {
 
-	struct ApplicationSpecification {
-		const char* name = "Application";
-		WindowSpecification windowSpec;
-	};
+    struct ApplicationSpecification {
+        const char* name = "Application";
+        WindowSpecification windowSpec;
+    };
 
-	class Application
-	{
-	public:
-		Application(const ApplicationSpecification& specification = ApplicationSpecification());
-		~Application();
+    class Application
+    {
+    public:
+        Application(const ApplicationSpecification& specification = ApplicationSpecification());
+        ~Application();
 
-		void Run();
-		void Stop();
+        void Run();
+        void Stop();
+        void OnEvent(Event& e);
 
-		std::shared_ptr<Window> GetWindow() const { return m_Window; }
+        template<typename TLayer>
+        void PushLayer() {
+            m_LayerStack.push_back(std::make_shared<TLayer>());
+            m_LayerStack.back()->OnAttach();
+        }
 
-		static Application& Get();
-		static float GetTime();
+        std::shared_ptr<Window> GetWindow() const { return m_Window; }
 
-	private:
-		ApplicationSpecification m_Specification;
-		std::shared_ptr<Window> m_Window;
-		bool m_Running = false;
+        static Application& Get();
+        static float GetTime();
 
-		std::shared_ptr<PhysicsSystem> m_PhysicsSystem;
-		std::shared_ptr<RenderSystem> m_RenderSystem;
-		std::vector<Entity> m_ActiveSwarm;
-		int m_TargetHundreds = 1;
-		bool m_PhysicsEnabled = true;
-		int m_FrameCount = 0;
-	};
+    private:
+        bool OnWindowClose(WindowCloseEvent& e);
+        void PollRaylibEvents();
+
+        ApplicationSpecification m_Specification;
+        std::shared_ptr<Window> m_Window;
+        bool m_Running = false;
+
+        std::vector<std::shared_ptr<Layer>> m_LayerStack;
+    };
 }

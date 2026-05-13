@@ -74,11 +74,14 @@ target_include_directories(imgui PUBLIC
 
 target_link_libraries(imgui PRIVATE raylib)
 
-add_executable(${PROJECT_NAME} 
-    App/Source/Main.cpp
-    Core/Source/Core/Application.cpp
-    Core/Source/Core/Window.cpp
+file(GLOB_RECURSE SRC_FILES 
+    "App/Source/*.cpp" 
+    "App/Source/*.h" 
+    "Core/Source/*.cpp" 
+    "Core/Source/*.h"
 )
+
+add_executable(${PROJECT_NAME} ${SRC_FILES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Source

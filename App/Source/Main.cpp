@@ -1,19 +1,17 @@
 #include <Core/Application.h>
 #include <ECS/Coordinator.h>
+#include "Layers/StressTestLayer.h"
 #include "Constants.h"
 
-// The single global ECS coordinator
 Coordinator coordinator;
 
 int main() {
-    Core::ApplicationSpecification spec;
-    spec.name = "tecs";
-    spec.windowSpec.title = "tecs Engine";
-    spec.windowSpec.width = SCREEN_WIDTH;
-    spec.windowSpec.height = SCREEN_HEIGHT;
-    spec.windowSpec.fpsLimit = FPS_LIMIT;
+    Core::ApplicationSpecification appSpec;
+    appSpec.name = "tecs";
+    appSpec.windowSpec.title = "tecs Stress Test";
 
-    Core::Application app(spec);
+    Core::Application app(appSpec);
+    app.PushLayer<StressTestLayer>();
     app.Run();
 
     return 0;

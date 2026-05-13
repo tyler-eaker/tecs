@@ -1,126 +1,124 @@
 #include "Application.h"
-#include "Constants.h"
-#include "Components.h"
+#include "Events/MouseEvent.h"
+#include "Events/KeyEvent.h"
 
 #include <raylib.h>
 #include <rlImGui.h>
 #include <imgui.h>
-#include <algorithm> // Required for std::clamp
-
-// Connect to the global ECS coordinator
-extern Coordinator coordinator;
+#include <algorithm>
 
 namespace Core {
 
-	static Application* s_Application = nullptr;
+    static Application* s_Application = nullptr;
 
-	Application::Application(const ApplicationSpecification& specification)
-		: m_Specification(specification)
-	{
-		SetTraceLogLevel(LOG_WARNING);
+    Application::Application(const ApplicationSpecification& specification)
+        : m_Specification(specification) {
 
-		SPDLOG_ASSERT(!s_Application, "Application already exists!");
-		s_Application = this;
+        s_Application = this;
 
-		if (m_Specification.windowSpec.title == nullptr || m_Specification.windowSpec.title[0] == '\0') {
-			m_Specification.windowSpec.title = m_Specification.name;
-		}
+        if (m_Specification.windowSpec.title == nullptr || m_Specification.windowSpec.title[0] == '\0')
+            m_Specification.windowSpec.title = m_Specification.name;
 
-		m_Window = std::make_shared<Window>(m_Specification.windowSpec);
-		m_Window->Create();
+        m_Window = std::make_shared<Window>(m_Specification.windowSpec);
+        m_Window->Create();
 
-		rlImGuiSetup(true);
+        rlImGuiSetup(true);
+    }
 
-		coordinator.RegisterComponent<Position>();
-		coordinator.RegisterComponent<Velocity>();
-		coordinator.RegisterComponent<Sprite>();
+    Application::~Application() {
+        for (auto& layer : m_LayerStack) {
+            layer->OnDetach();
+        }
+        m_LayerStack.clear();
 
-		m_PhysicsSystem = coordinator.RegisterSystem<PhysicsSystem>();
-		Signature physicsSignature;
-		physicsSignature.set(coordinator.GetComponentType<Position>());
-		physicsSignature.set(coordinator.GetComponentType<Velocity>());
-		coordinator.SetSystemSignature<PhysicsSystem>(physicsSignature);
+        rlImGuiShutdown();
+        m_Window->Destroy();
+        s_Application = nullptr;
+    }
 
-		m_RenderSystem = coordinator.RegisterSystem<RenderSystem>();
-		Signature renderSignature;
-		renderSignature.set(coordinator.GetComponentType<Position>());
-		renderSignature.set(coordinator.GetComponentType<Sprite>());
-		coordinator.SetSystemSignature<RenderSystem>(renderSignature);
-	}
+    void Application::Run() {
+        m_Running = true;
+        float lastTime = GetTime();
 
-	Application::~Application() {
-		rlImGuiShutdown();
-		m_Window->Destroy();
-		s_Application = nullptr;
-	}
+        while (m_Running) {
 
-	void Application::Run() {
-		m_Running = true;
-		float lastTime = GetTime();
+            PollRaylibEvents();
 
-		// Main Application loop
-		while (m_Running) {
+            if (!m_Running) break;
 
-			if (m_Window->ShouldClose()) {
-				Stop();
-				break;
-			}
+            float currentTime = GetTime();
+            float timestep = std::clamp(currentTime - lastTime, 0.001f, 0.1f);
+            lastTime = currentTime;
 
-			float currentTime = GetTime();
-			float timestep = std::clamp(currentTime - lastTime, 0.001f, 0.1f);
-			lastTime = currentTime;
+            for (auto& layer : m_LayerStack) {
+                layer->OnUpdate(timestep);
+            }
 
-			int targetEntities = m_TargetHundreds * 100;
+            m_Window->BeginFrame();
+            ClearBackground(BLACK);
+            for (auto& layer : m_LayerStack) {
+                layer->OnRender();
+            }
 
-			while (m_ActiveSwarm.size() < static_cast<uint32_t>(targetEntities)) {
-				Entity entity = coordinator.CreateEntity();
-				coordinator.AddComponent<Position>(entity, Position{ static_cast<float>(GetRandomValue(0, SCREEN_WIDTH)), static_cast<float>(GetRandomValue(0, SCREEN_HEIGHT)) });
-				coordinator.AddComponent<Velocity>(entity, Velocity{ static_cast<float>(GetRandomValue(-500.0f, 500.0f)), static_cast<float>(GetRandomValue(-50.0f, 50.0f)) });
-				coordinator.AddComponent<Sprite>(entity, Sprite{ static_cast<uint32_t>(GetRandomValue(1, 5)), static_cast<uint32_t>(GetRandomValue(1, 5)), COLORS[GetRandomValue(0, MAX_COLORS_COUNT - 1)] });
-				m_ActiveSwarm.push_back(entity);
-			}
+            rlImGuiBegin();
+            for (auto& layer : m_LayerStack) {
+                layer->OnImGuiRender();
+            }
+            rlImGuiEnd();
 
-			while (m_ActiveSwarm.size() > static_cast<uint32_t>(targetEntities)) {
-				Entity entityToDestroy = m_ActiveSwarm.back();
-				coordinator.DestroyEntity(entityToDestroy);
-				m_ActiveSwarm.pop_back();
-			}
+            m_Window->EndFrame();
+        }
+    }
 
-			if (m_PhysicsEnabled) {
-				m_PhysicsSystem->Update(timestep, SCREEN_WIDTH, SCREEN_HEIGHT);
-			}
+    void Application::Stop() {
+        m_Running = false;
+    }
 
-			m_Window->BeginFrame();
-			ClearBackground(CLEAR_BACKGROUND_COLOR);
+    void Application::OnEvent(Event& e) {
+        EventDispatcher dispatcher(e);
+        dispatcher.Dispatch<WindowCloseEvent>([this](WindowCloseEvent& event) { return OnWindowClose(event); });
 
-			m_RenderSystem->Draw();
+        for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it) {
+            if (e.Handled) break;
+            (*it)->OnEvent(e);
+        }
+    }
 
-			rlImGuiBegin();
-			ImGui::Begin("tecs");
-			ImGui::Text("Current FPS: %d", GetFPS());
-			ImGui::Text("Frame %d", m_FrameCount);
-			ImGui::Text("Entity count: %zu", m_ActiveSwarm.size());
-			ImGui::SliderInt("Swarm Size", &m_TargetHundreds, 1, MAX_ENTITIES / 100);
-			ImGui::Checkbox("Enable physics", &m_PhysicsEnabled);
-			ImGui::End();
-			rlImGuiEnd();
+    bool Application::OnWindowClose(WindowCloseEvent& e) {
+        m_Running = false;
+        return true;
+    }
 
-			m_Window->EndFrame();
+    void Application::PollRaylibEvents() {
+        if (WindowShouldClose()) {
+            WindowCloseEvent e;
+            OnEvent(e);
+        }
 
-			m_FrameCount++;
-		}
-	}
+        if (IsWindowResized()) {
+            WindowResizeEvent e(GetScreenWidth(), GetScreenHeight());
+            OnEvent(e);
+        }
 
-	void Application::Stop() {
-		m_Running = false;
-	}
+        int key = GetKeyPressed();
+        while (key != 0) {
+            KeyPressedEvent e(key);
+            OnEvent(e);
+            key = GetKeyPressed();
+        }
 
-	Application& Application::Get() {
-		SPDLOG_ASSERT(s_Application != nullptr, "Application instance is null!");
-		return *s_Application;
-	}
+        Vector2 mouseDelta = GetMouseDelta();
+        if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f) {
+            MouseMovedEvent e(static_cast<float>(GetMouseX()), static_cast<float>(GetMouseY()));
+            OnEvent(e);
+        }
+    }
 
-	float Application::GetTime() {
-		return static_cast<float>(::GetTime());
-	}
+    Application& Application::Get() {
+        return *s_Application;
+    }
+
+    float Application::GetTime() {
+        return static_cast<float>(::GetTime());
+    }
 }
