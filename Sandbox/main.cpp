@@ -8,6 +8,8 @@
 #include <rlImGui.h>
 #include <memory>
 
+#define MAX_COLORS_COUNT 21
+
 Coordinator coordinator;
 
 int main() {
@@ -27,6 +29,16 @@ int main() {
 
     rlImGuiSetup(true);
 
+    Color colors[MAX_COLORS_COUNT] = {
+        DARKGRAY, MAROON, ORANGE, DARKGREEN, DARKBLUE, DARKPURPLE, DARKBROWN,
+        GRAY, RED, GOLD, LIME, BLUE, VIOLET, BROWN, LIGHTGRAY, PINK, YELLOW,
+        GREEN, SKYBLUE, PURPLE, BEIGE };
+
+    const char* colorNames[MAX_COLORS_COUNT] = {
+        "DARKGRAY", "MAROON", "ORANGE", "DARKGREEN", "DARKBLUE", "DARKPURPLE",
+        "DARKBROWN", "GRAY", "RED", "GOLD", "LIME", "BLUE", "VIOLET", "BROWN",
+        "LIGHTGRAY", "PINK", "YELLOW", "GREEN", "SKYBLUE", "PURPLE", "BEIGE" };
+
     coordinator.RegisterComponent<Position>();
     coordinator.RegisterComponent<Velocity>();
     coordinator.RegisterComponent<Sprite>();
@@ -43,19 +55,24 @@ int main() {
     renderSignature.set(coordinator.GetComponentType<Sprite>());
     coordinator.SetSystemSignature<RenderSystem>(renderSignature);
 
-    Entity player = coordinator.CreateEntity();
-    coordinator.AddComponent<Position>(player, Position{ 0.0f, 0.0f });
-    coordinator.AddComponent<Velocity>(player, Velocity{ 10.0f, 15.0f });
-    coordinator.AddComponent<Sprite>(player, Sprite{ 20, 20, RED });
+    uint32_t entitiesToSpawn = 5000;
+    uint32_t currentEntities = 0;
+    for (uint32_t testEntities = 0; testEntities < entitiesToSpawn; ++testEntities) {
+        Entity entity = coordinator.CreateEntity();
+        coordinator.AddComponent<Position>(entity, Position{ static_cast<float>(GetRandomValue(0, screenWidth)), static_cast<float>(GetRandomValue(0, screenHeight)) });
+        coordinator.AddComponent<Velocity>(entity, Velocity{ static_cast<float>(GetRandomValue(-500.0f, 500.0f)), static_cast<float>(GetRandomValue(-50.0f, 50.0f)) });
+        coordinator.AddComponent<Sprite>(entity, Sprite{ 20, 20, colors[GetRandomValue(0, MAX_COLORS_COUNT - 1)]});
+        ++currentEntities;
+    }
 
     int frameCount = 0;
 
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
 
-        physicsSystem->Update(dt);
+        physicsSystem->Update(dt, screenWidth, screenHeight);
 
-        auto& playerPos = coordinator.GetComponent<Position>(player);
+        //auto& playerPos = coordinator.GetComponent<Position>(player);
 
         BeginDrawing();
         ClearBackground(DARKGRAY);
@@ -66,9 +83,10 @@ int main() {
         ImGui::Begin("tecs");
         ImGui::Text("Current FPS: %d", GetFPS());
         ImGui::Text("Frame %d", frameCount);
-        ImGui::Text("Position X: %.2f", playerPos.x);
-        ImGui::SameLine();
-        ImGui::Text(" Y: %.2f", playerPos.y);
+        ImGui::Text("Entity count: %d", currentEntities);
+        //ImGui::Text("Position X: %.2f", playerPos.x);
+        //ImGui::SameLine();
+        //ImGui::Text(" Y: %.2f", playerPos.y);
         ImGui::End();
         rlImGuiEnd();
 
