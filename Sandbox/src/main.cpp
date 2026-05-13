@@ -36,6 +36,7 @@ int main() {
     physicsSignature.set(coordinator.GetComponentType<Position>());
     physicsSignature.set(coordinator.GetComponentType<Velocity>());
     coordinator.SetSystemSignature<PhysicsSystem>(physicsSignature);
+    bool physicsEnabled = true;
 
     auto renderSystem = coordinator.RegisterSystem<RenderSystem>();
     Signature renderSignature;
@@ -67,7 +68,9 @@ int main() {
             activeSwarm.pop_back();
         }
 
-        physicsSystem->Update(dt, SCREEN_WIDTH, SCREEN_HEIGHT);
+        if (physicsEnabled) {
+            physicsSystem->Update(dt, SCREEN_WIDTH, SCREEN_HEIGHT);
+        }
 
         BeginDrawing();
         ClearBackground(CLEAR_BACKGROUND_COLOR);
@@ -80,6 +83,7 @@ int main() {
         ImGui::Text("Frame %d", frameCount);
         ImGui::Text("Entity count: %zu", activeSwarm.size());
         ImGui::SliderInt("Swarm Size", &targetHundreds, 1, MAX_ENTITIES / 100);
+        ImGui::Checkbox("Enable physics", &physicsEnabled);
         ImGui::End();
         rlImGuiEnd();
 
