@@ -1,7 +1,7 @@
 #pragma once
-#include "../Engine/include/System.h"
-#include "../Engine/include/Coordinator.h"
-#include "../Engine/include/Components.h"
+#include <ecs/System.h>
+#include <ecs/Coordinator.h>
+#include "../Components.h"
 
 extern Coordinator coordinator;
 

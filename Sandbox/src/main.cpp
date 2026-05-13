@@ -1,7 +1,8 @@
-#include "../Engine/include/Coordinator.h"
-#include "PhysicsSystem.h"
-#include "RenderSystem.h"
-#include "../Engine/include/Components.h"
+#include <ecs/Coordinator.h>
+#include "systems/PhysicsSystem.h"
+#include "systems/RenderSystem.h"
+#include "Constants.h"
+#include "Components.h"
 #include <raylib.h>
 #include <spdlog/spdlog.h>
 #include <imgui.h>
@@ -9,31 +10,22 @@
 #include <memory>
 #include <vector>
 
-#define MAX_COLORS_COUNT 21
-
 Coordinator coordinator;
 
 int main() {
 
     SetTraceLogLevel(LOG_WARNING); // Disables built in Raylib logs
 
-    const int screenWidth = 1280;
-    const int screenHeight = 720;
     spdlog::info("Initializing window...");
-    InitWindow(screenWidth, screenHeight, "tecs");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "tecs");
     if (WindowShouldClose()) {
         spdlog::error("Window failed to initialize.");
     }
     spdlog::info("Window initialized.");
 
-    SetTargetFPS(120);
+    SetTargetFPS(FPS_LIMIT);
 
     rlImGuiSetup(true);
-
-    Color colors[MAX_COLORS_COUNT] = {
-        DARKGRAY, MAROON, ORANGE, DARKGREEN, DARKBLUE, DARKPURPLE, DARKBROWN,
-        GRAY, RED, GOLD, LIME, BLUE, VIOLET, BROWN, LIGHTGRAY, PINK, YELLOW,
-        GREEN, SKYBLUE, PURPLE, BEIGE };
 
     coordinator.RegisterComponent<Position>();
     coordinator.RegisterComponent<Velocity>();
@@ -63,9 +55,9 @@ int main() {
 
         while (activeSwarm.size() < static_cast<uint32_t>(targetEntities)) {
             Entity entity = coordinator.CreateEntity();
-            coordinator.AddComponent<Position>(entity, Position{ static_cast<float>(GetRandomValue(0, screenWidth)), static_cast<float>(GetRandomValue(0, screenHeight)) });
+            coordinator.AddComponent<Position>(entity, Position{ static_cast<float>(GetRandomValue(0, SCREEN_WIDTH)), static_cast<float>(GetRandomValue(0, SCREEN_HEIGHT)) });
             coordinator.AddComponent<Velocity>(entity, Velocity{ static_cast<float>(GetRandomValue(-500.0f, 500.0f)), static_cast<float>(GetRandomValue(-50.0f, 50.0f)) });
-            coordinator.AddComponent<Sprite>(entity, Sprite{ static_cast<uint32_t>(GetRandomValue(1, 5)), static_cast<uint32_t>(GetRandomValue(1, 5)), colors[GetRandomValue(0, MAX_COLORS_COUNT - 1)] });
+            coordinator.AddComponent<Sprite>(entity, Sprite{ static_cast<uint32_t>(GetRandomValue(1, 5)), static_cast<uint32_t>(GetRandomValue(1, 5)), COLORS[GetRandomValue(0, MAX_COLORS_COUNT - 1)] });
             activeSwarm.push_back(entity);
         }
 
@@ -75,10 +67,10 @@ int main() {
             activeSwarm.pop_back();
         }
 
-        physicsSystem->Update(dt, screenWidth, screenHeight);
+        physicsSystem->Update(dt, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         BeginDrawing();
-        ClearBackground(BLACK);
+        ClearBackground(CLEAR_BACKGROUND_COLOR);
 
         renderSystem->Draw();
 
