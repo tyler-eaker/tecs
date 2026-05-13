@@ -74,23 +74,19 @@ target_include_directories(imgui PUBLIC
 
 target_link_libraries(imgui PRIVATE raylib)
 
-find_package(OpenMP REQUIRED)
-
 add_executable(${PROJECT_NAME} 
-    Sandbox/src/main.cpp
+    App/Source/Main.cpp
+    Core/Source/Core/Application.cpp
+    Core/Source/Core/Window.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/Engine/include
-)
-
-target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/Sandbox/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Source
+    ${CMAKE_CURRENT_SOURCE_DIR}/App/Source
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     raylib
     spdlog::spdlog
     imgui
-    OpenMP::OpenMP_CXX
 )
