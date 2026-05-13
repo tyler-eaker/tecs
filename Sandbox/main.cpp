@@ -7,6 +7,7 @@
 #include <imgui.h>
 #include <rlImGui.h>
 #include <memory>
+#include <vector>
 
 #define MAX_COLORS_COUNT 21
 
@@ -34,11 +35,6 @@ int main() {
         GRAY, RED, GOLD, LIME, BLUE, VIOLET, BROWN, LIGHTGRAY, PINK, YELLOW,
         GREEN, SKYBLUE, PURPLE, BEIGE };
 
-    const char* colorNames[MAX_COLORS_COUNT] = {
-        "DARKGRAY", "MAROON", "ORANGE", "DARKGREEN", "DARKBLUE", "DARKPURPLE",
-        "DARKBROWN", "GRAY", "RED", "GOLD", "LIME", "BLUE", "VIOLET", "BROWN",
-        "LIGHTGRAY", "PINK", "YELLOW", "GREEN", "SKYBLUE", "PURPLE", "BEIGE" };
-
     coordinator.RegisterComponent<Position>();
     coordinator.RegisterComponent<Velocity>();
     coordinator.RegisterComponent<Sprite>();
@@ -55,27 +51,34 @@ int main() {
     renderSignature.set(coordinator.GetComponentType<Sprite>());
     coordinator.SetSystemSignature<RenderSystem>(renderSignature);
 
-    uint32_t entitiesToSpawn = 5000;
-    uint32_t currentEntities = 0;
-    for (uint32_t testEntities = 0; testEntities < entitiesToSpawn; ++testEntities) {
-        Entity entity = coordinator.CreateEntity();
-        coordinator.AddComponent<Position>(entity, Position{ static_cast<float>(GetRandomValue(0, screenWidth)), static_cast<float>(GetRandomValue(0, screenHeight)) });
-        coordinator.AddComponent<Velocity>(entity, Velocity{ static_cast<float>(GetRandomValue(-500.0f, 500.0f)), static_cast<float>(GetRandomValue(-50.0f, 50.0f)) });
-        coordinator.AddComponent<Sprite>(entity, Sprite{ 20, 20, colors[GetRandomValue(0, MAX_COLORS_COUNT - 1)]});
-        ++currentEntities;
-    }
+    int targetHundreds = 1;
+    std::vector<Entity> activeSwarm;
 
     int frameCount = 0;
 
     while (!WindowShouldClose()) {
         float dt = GetFrameTime();
 
+        int targetEntities = targetHundreds * 100;
+
+        while (activeSwarm.size() < static_cast<uint32_t>(targetEntities)) {
+            Entity entity = coordinator.CreateEntity();
+            coordinator.AddComponent<Position>(entity, Position{ static_cast<float>(GetRandomValue(0, screenWidth)), static_cast<float>(GetRandomValue(0, screenHeight)) });
+            coordinator.AddComponent<Velocity>(entity, Velocity{ static_cast<float>(GetRandomValue(-500.0f, 500.0f)), static_cast<float>(GetRandomValue(-50.0f, 50.0f)) });
+            coordinator.AddComponent<Sprite>(entity, Sprite{ static_cast<uint32_t>(GetRandomValue(1, 5)), static_cast<uint32_t>(GetRandomValue(1, 5)), colors[GetRandomValue(0, MAX_COLORS_COUNT - 1)] });
+            activeSwarm.push_back(entity);
+        }
+
+        while (activeSwarm.size() > static_cast<uint32_t>(targetEntities)) {
+            Entity entityToDestroy = activeSwarm.back();
+            coordinator.DestroyEntity(entityToDestroy);
+            activeSwarm.pop_back();
+        }
+
         physicsSystem->Update(dt, screenWidth, screenHeight);
 
-        //auto& playerPos = coordinator.GetComponent<Position>(player);
-
         BeginDrawing();
-        ClearBackground(DARKGRAY);
+        ClearBackground(BLACK);
 
         renderSystem->Draw();
 
@@ -83,10 +86,8 @@ int main() {
         ImGui::Begin("tecs");
         ImGui::Text("Current FPS: %d", GetFPS());
         ImGui::Text("Frame %d", frameCount);
-        ImGui::Text("Entity count: %d", currentEntities);
-        //ImGui::Text("Position X: %.2f", playerPos.x);
-        //ImGui::SameLine();
-        //ImGui::Text(" Y: %.2f", playerPos.y);
+        ImGui::Text("Entity count: %zu", activeSwarm.size());
+        ImGui::SliderInt("Swarm Size", &targetHundreds, 1, MAX_ENTITIES / 100);
         ImGui::End();
         rlImGuiEnd();
 
