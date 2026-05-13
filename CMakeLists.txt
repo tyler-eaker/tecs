@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.20)
 
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5) 
 
@@ -8,8 +8,9 @@ endif()
 
 project(tecs VERSION 1.0 LANGUAGES C CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(CheckIPOSupported)
@@ -73,6 +74,8 @@ target_include_directories(imgui PUBLIC
 
 target_link_libraries(imgui PRIVATE raylib)
 
+find_package(OpenMP REQUIRED)
+
 add_executable(${PROJECT_NAME} 
     Sandbox/src/main.cpp
 )
@@ -89,4 +92,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     raylib
     spdlog::spdlog
     imgui
+    OpenMP::OpenMP_CXX
 )

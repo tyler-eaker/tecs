@@ -31,7 +31,6 @@ public:
             auto const& system = pair.second;
             system->entities.erase(entity);
         }
-
     }
 
     void EntitySignatureChanged(Entity entity, Signature entitySignature) {
