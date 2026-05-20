@@ -1,11 +1,12 @@
 #include <Core/Application.h>
 #include <ECS/Coordinator.h>
-#include "Layers/StressTestLayer.h"
-#include "Constants.h"
+#include <Layers/StressTestLayer.h>
+#include <Constants.h>
 
 Coordinator coordinator;
 
-int main() {
+int main() 
+{
     Core::ApplicationSpecification appSpec;
     appSpec.name = "tecs";
     appSpec.windowSpec.title = "tecs Stress Test";

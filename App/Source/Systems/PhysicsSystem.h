@@ -1,13 +1,16 @@
 #pragma once
+
 #include "ECS/System.h"
 #include "ECS/Coordinator.h"
 #include "Components.h"
 
 extern Coordinator coordinator;
 
-class PhysicsSystem : public System {
+class PhysicsSystem : public System 
+{
 public:
-    void Update(float dt, int screen_w, int screen_h) {
+    void Update(float dt, int screen_w, int screen_h) 
+    {
         for (auto const& entity : entities) {
             auto& position = coordinator.GetComponent<Position>(entity);
             auto& velocity = coordinator.GetComponent<Velocity>(entity);

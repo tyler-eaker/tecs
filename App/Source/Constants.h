@@ -1,9 +1,17 @@
 #pragma once
-#include <cstdint>
+
 #include <raylib.h>
 
-constexpr uint32_t SCREEN_WIDTH = 1280;
-constexpr uint32_t SCREEN_HEIGHT= 720;
+#include <cstdint>
+
+#define SPDLOG_ASSERT(condition, ...) \
+    if (!(condition)) { \
+        spdlog::critical("Assertion Failed: " __VA_ARGS__); \
+        std::abort(); \
+    }
+
+constexpr uint32_t SCREEN_WIDTH = 1920;
+constexpr uint32_t SCREEN_HEIGHT= 1080;
 constexpr uint32_t FPS_LIMIT = 120;
 
 constexpr uint32_t MAX_COLORS_COUNT = 21;

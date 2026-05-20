@@ -34,7 +34,7 @@ FetchContent_MakeAvailable(raylib)
 FetchContent_Declare(
     spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog.git
-    GIT_TAG v1.13.0
+    GIT_TAG v1.14.1
 )
 FetchContent_MakeAvailable(spdlog)
 
@@ -74,7 +74,7 @@ target_include_directories(imgui PUBLIC
 
 target_link_libraries(imgui PRIVATE raylib)
 
-file(GLOB_RECURSE SRC_FILES 
+file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
     "App/Source/*.cpp" 
     "App/Source/*.h" 
     "Core/Source/*.cpp" 
@@ -82,6 +82,12 @@ file(GLOB_RECURSE SRC_FILES
 )
 
 add_executable(${PROJECT_NAME} ${SRC_FILES})
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/App/Assets
+    $<TARGET_FILE_DIR:${PROJECT_NAME}>/App/Assets
+)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/Source

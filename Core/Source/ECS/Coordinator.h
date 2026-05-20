@@ -3,11 +3,13 @@
 #include "ECS.h"
 #include "EntityManager.h"
 #include "SystemManager.h"
+
 #include <unordered_map>
 #include <memory>
 #include <typeinfo>
 
-class Coordinator {
+class Coordinator 
+{
 private:
 	std::unique_ptr<EntityManager> entityManager;
 	std::unique_ptr<SystemManager> systemManager;
@@ -18,24 +20,27 @@ private:
 	ComponentType nextComponentType = 0;
 
 	template<typename T>
-	std::shared_ptr<ComponentArray<T>> GetComponentArray() {
+	std::shared_ptr<ComponentArray<T>> GetComponentArray() 
+	{
 		const char* typeName = typeid(T).name();
 		SPDLOG_ASSERT(componentArrays.find(typeName) != componentArrays.end(), "Component not registered before use.");
 		return std::static_pointer_cast<ComponentArray<T>>(componentArrays[typeName]);
 	}
 
 public:
-	Coordinator() {
+	Coordinator() 
+	{
 		spdlog::info("Initializing coordinator...");
 		entityManager = std::make_unique<EntityManager>();
 		systemManager = std::make_unique<SystemManager>();
-		if (entityManager && systemManager) {
+		if (entityManager && systemManager && this) {
 			spdlog::info("Coordinator initialized.");
 		}
 	}
 
 	template<typename T>
-	void RegisterComponent() {
+	void RegisterComponent() 
+	{
 		const char* typeName = typeid(T).name();
 		SPDLOG_ASSERT(componentArrays.find(typeName) == componentArrays.end(), "Registering component type more than once.");
 		componentTypes[typeName] = nextComponentType;
@@ -44,17 +49,20 @@ public:
 	}
 
 	template<typename T>
-	ComponentType GetComponentType() {
+	ComponentType GetComponentType() 
+	{
 		const char* typeName = typeid(T).name();
 		SPDLOG_ASSERT(componentTypes.find(typeName) != componentTypes.end(), "Component not registered before use.");
 		return componentTypes[typeName];
 	}
 
-	Entity CreateEntity() {
+	Entity CreateEntity() 
+	{
 		return entityManager->CreateEntity();
 	}
 
-	void DestroyEntity(Entity entity) {
+	void DestroyEntity(Entity entity) 
+	{
 		entityManager->DestroyEntity(entity);
 		for (auto const& pair : componentArrays) {
 			auto const& componentArray = pair.second;
@@ -64,7 +72,8 @@ public:
 	}
 
 	template<typename T>
-	void AddComponent(Entity entity, T component) {
+	void AddComponent(Entity entity, T component) 
+	{
 		GetComponentArray<T>()->InsertData(entity, component);
 		Signature signature = entityManager->GetSignature(entity);
 		signature.set(GetComponentType<T>(), true);
@@ -73,7 +82,8 @@ public:
 	}
 
 	template<typename T>
-	void RemoveComponent(Entity entity) {
+	void RemoveComponent(Entity entity) 
+	{
 		GetComponentArray<T>()->RemoveData(entity);
 		Signature signature = entityManager->GetSignature(entity);
 		signature.set(GetComponentType<T>(), false);
@@ -82,17 +92,20 @@ public:
 	}
 
 	template<typename T>
-	T& GetComponent(Entity entity) {
+	T& GetComponent(Entity entity) 
+	{
 		return GetComponentArray<T>()->GetData(entity);
 	}
 
 	template<typename T>
-	std::shared_ptr<T> RegisterSystem() {
+	std::shared_ptr<T> RegisterSystem() 
+	{
 		return systemManager->RegisterSystem<T>();
 	}
 
 	template<typename T>
-	void SetSystemSignature(Signature signature) {
+	void SetSystemSignature(Signature signature) 
+	{
 		systemManager->SetSignature<T>(signature);
 	}
 };

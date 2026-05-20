@@ -1,15 +1,21 @@
 #include "Window.h"
 
-namespace Core {
-
+namespace Core 
+{
     Window::Window(const WindowSpecification& specification)
-        : m_Specification(specification) {}
+        : m_Specification(specification) 
+    {
+    }
 
-    Window::~Window() {
+    Window::~Window() 
+    {
         Destroy();
     }
 
-    void Window::Create() {
+    void Window::Create() 
+    {
+        SetTraceLogLevel(LOG_WARNING);
+
         spdlog::info("Initializing window...");
         InitWindow(m_Specification.width, m_Specification.height, m_Specification.title);
         if (WindowShouldClose()) {
@@ -18,23 +24,30 @@ namespace Core {
         spdlog::info("Window initialized.");
 
         SetTargetFPS(m_Specification.fpsLimit);
+
+        if (m_Specification.isResizable == true)
+            SetWindowState(FLAG_WINDOW_RESIZABLE);
     }
 
-    void Window::Destroy() {
+    void Window::Destroy() 
+    {
         if (IsWindowReady()) {
             CloseWindow();
         }
     }
 
-    void Window::BeginFrame() {
+    void Window::BeginFrame() 
+    {
         BeginDrawing();
     }
 
-    void Window::EndFrame() {
+    void Window::EndFrame() 
+    {
         EndDrawing();
     }
 
-    bool Window::ShouldClose() const {
+    bool Window::ShouldClose() const 
+    {
         return WindowShouldClose();
     }
 }

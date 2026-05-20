@@ -1,8 +1,11 @@
 #pragma once
+
 #include "Event.h"
 
-namespace Core {
-    class WindowResizeEvent : public Event {
+namespace Core 
+{
+    class WindowResizeEvent : public Event 
+    {
     public:
         WindowResizeEvent(unsigned int width, unsigned int height) : m_Width(width), m_Height(height) {}
         unsigned int GetWidth() const { return m_Width; }
@@ -17,7 +20,8 @@ namespace Core {
         unsigned int m_Width, m_Height;
     };
 
-    class WindowCloseEvent : public Event {
+    class WindowCloseEvent : public Event 
+    {
     public:
         WindowCloseEvent() = default;
         static EventType GetStaticType() { return EventType::WindowClose; }

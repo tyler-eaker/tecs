@@ -1,6 +1,8 @@
 #pragma once
-#include <cstdint>
+
 #include <raylib.h>
+
+#include <string>
 
 struct Position {
     float x;
@@ -13,7 +15,8 @@ struct Velocity {
 };
 
 struct Sprite {
+    std::string textureId;
     uint32_t width;
     uint32_t height;
-    Color color;
+    Color tint;
 };

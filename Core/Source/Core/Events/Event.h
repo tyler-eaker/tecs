@@ -1,9 +1,11 @@
 #pragma once
+
 #include <string>
 
-namespace Core {
-
-    enum class EventType {
+namespace Core 
+{
+    enum class EventType 
+    {
         None = 0,
         WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
         AppTick, AppUpdate, AppRender,
@@ -11,7 +13,8 @@ namespace Core {
         MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
     };
 
-    enum EventCategory {
+    enum EventCategory 
+    {
         None = 0,
         EventCategoryApplication = 1 << 0,
         EventCategoryInput = 1 << 1,
@@ -20,7 +23,8 @@ namespace Core {
         EventCategoryMouseButton = 1 << 4
     };
 
-    class Event {
+    class Event 
+    {
     public:
         virtual ~Event() = default;
 
@@ -31,12 +35,14 @@ namespace Core {
         virtual int GetCategoryFlags() const = 0;
         virtual std::string ToString() const { return GetName(); }
 
-        bool IsInCategory(EventCategory category) {
+        bool IsInCategory(EventCategory category) 
+        {
             return GetCategoryFlags() & category;
         }
     };
 
-    class EventDispatcher {
+    class EventDispatcher 
+    {
     public:
         EventDispatcher(Event& event) : m_Event(event) {}
 

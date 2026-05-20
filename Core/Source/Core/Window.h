@@ -2,16 +2,19 @@
 
 #include <raylib.h>
 #include <spdlog/spdlog.h>
+
 #include <string>
 
-namespace Core {
+namespace Core 
+{
 
-    struct WindowSpecification {
+    struct WindowSpecification 
+    {
         const char* title = "Application";
-        uint32_t width = 1280;
-        uint32_t height = 720;
+        uint32_t width = 1920;
+        uint32_t height = 1080;
         uint32_t fpsLimit = 120;
-        bool isResizable = true;
+        bool isResizable = false;
     };
 
     class Window

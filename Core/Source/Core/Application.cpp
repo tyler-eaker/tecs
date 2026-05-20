@@ -1,19 +1,12 @@
 #include "Application.h"
-#include "Events/MouseEvent.h"
-#include "Events/KeyEvent.h"
 
-#include <raylib.h>
-#include <rlImGui.h>
-#include <imgui.h>
-#include <algorithm>
-
-namespace Core {
-
+namespace Core
+{
     static Application* s_Application = nullptr;
 
     Application::Application(const ApplicationSpecification& specification)
-        : m_Specification(specification) {
-
+        : m_Specification(specification)
+    {
         s_Application = this;
 
         if (m_Specification.windowSpec.title == nullptr || m_Specification.windowSpec.title[0] == '\0')
@@ -25,18 +18,23 @@ namespace Core {
         rlImGuiSetup(true);
     }
 
-    Application::~Application() {
+    Application::~Application()
+    {
         for (auto& layer : m_LayerStack) {
             layer->OnDetach();
         }
         m_LayerStack.clear();
+
+        // FLUSH GPU MEMORY BEFORE DESTROYING THE WINDOW
+        AssetManager::Get().Clear();
 
         rlImGuiShutdown();
         m_Window->Destroy();
         s_Application = nullptr;
     }
 
-    void Application::Run() {
+    void Application::Run()
+    {
         m_Running = true;
         float lastTime = GetTime();
 
@@ -70,11 +68,13 @@ namespace Core {
         }
     }
 
-    void Application::Stop() {
+    void Application::Stop()
+    {
         m_Running = false;
     }
 
-    void Application::OnEvent(Event& e) {
+    void Application::OnEvent(Event& e)
+    {
         EventDispatcher dispatcher(e);
         dispatcher.Dispatch<WindowCloseEvent>([this](WindowCloseEvent& event) { return OnWindowClose(event); });
 
@@ -84,12 +84,14 @@ namespace Core {
         }
     }
 
-    bool Application::OnWindowClose(WindowCloseEvent& e) {
+    bool Application::OnWindowClose(WindowCloseEvent& e)
+    {
         m_Running = false;
         return true;
     }
 
-    void Application::PollRaylibEvents() {
+    void Application::PollRaylibEvents()
+    {
         if (WindowShouldClose()) {
             WindowCloseEvent e;
             OnEvent(e);
@@ -114,11 +116,13 @@ namespace Core {
         }
     }
 
-    Application& Application::Get() {
+    Application& Application::Get()
+    {
         return *s_Application;
     }
 
-    float Application::GetTime() {
+    float Application::GetTime()
+    {
         return static_cast<float>(::GetTime());
     }
 }

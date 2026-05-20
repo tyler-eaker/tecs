@@ -1,8 +1,11 @@
 #pragma once
+
 #include "Event.h"
 
-namespace Core {
-    class KeyPressedEvent : public Event {
+namespace Core 
+{
+    class KeyPressedEvent : public Event 
+    {
     public:
         KeyPressedEvent(int keycode) : m_KeyCode(keycode) {}
         int GetKeyCode() const { return m_KeyCode; }

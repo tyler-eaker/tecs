@@ -2,16 +2,25 @@
 
 #include "Window.h"
 #include "Layer.h"
+#include "AssetManager.h"
 #include "Events/Event.h"
 #include "Events/ApplicationEvent.h"
+#include "Events/MouseEvent.h"
+#include "Events/KeyEvent.h"
+#include <raylib.h>
+#include <rlImGui.h>
+#include <imgui.h>
 
+#include <algorithm>
 #include <string>
 #include <memory>
 #include <vector>
 
-namespace Core {
+namespace Core 
+{
 
-    struct ApplicationSpecification {
+    struct ApplicationSpecification 
+    {
         const char* name = "Application";
         WindowSpecification windowSpec;
     };
@@ -27,7 +36,8 @@ namespace Core {
         void OnEvent(Event& e);
 
         template<typename TLayer>
-        void PushLayer() {
+        void PushLayer() 
+        {
             m_LayerStack.push_back(std::make_shared<TLayer>());
             m_LayerStack.back()->OnAttach();
         }

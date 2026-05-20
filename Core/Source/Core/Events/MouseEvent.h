@@ -1,8 +1,11 @@
 #pragma once
+
 #include "Event.h"
 
-namespace Core {
-    class MouseMovedEvent : public Event {
+namespace Core 
+{
+    class MouseMovedEvent : public Event 
+    {
     public:
         MouseMovedEvent(float x, float y) : m_MouseX(x), m_MouseY(y) {}
         float GetX() const { return m_MouseX; }
